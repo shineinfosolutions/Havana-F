@@ -186,6 +186,26 @@ const EditBookingForm = () => {
   const [formInitialized, setFormInitialized] = useState(false);
 
 
+  // Convert a stored ISO/UTC date into a datetime-local input value (YYYY-MM-DDTHH:mm), local time
+  const toLocalDatetimeInput = (date) => {
+    if (!date) return '';
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return '';
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+
+  // Compose a datetime-local value from a date + an "HH:mm" time string (used as fallback prefill)
+  const composeDatetimeInput = (date, timeStr) => {
+    if (!date) return '';
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return '';
+    const pad = (n) => String(n).padStart(2, '0');
+    const datePart = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    const timePart = /^\d{1,2}:\d{2}$/.test(timeStr || '') ? timeStr.padStart(5, '0') : '12:00';
+    return `${datePart}T${timePart}`;
+  };
+
   const [formData, setFormData] = useState({
     grcNo: '',
     invoiceNumber: '',
@@ -251,7 +271,8 @@ const EditBookingForm = () => {
     status: 'Booked',
     advancePayments: [],
     totalAdvanceAmount: 0,
-    balanceAmount: 0
+    balanceAmount: 0,
+    actualCheckOutTime: ''
   });
 
   useEffect(() => {
@@ -354,7 +375,10 @@ const EditBookingForm = () => {
         status: editBooking.status || 'Booked',
         advancePayments: editBooking.advancePayments || [],
         totalAdvanceAmount: editBooking.totalAdvanceAmount || 0,
-        balanceAmount: editBooking.balanceAmount || 0
+        balanceAmount: editBooking.balanceAmount || 0,
+        actualCheckOutTime: editBooking.actualCheckOutTime
+          ? toLocalDatetimeInput(editBooking.actualCheckOutTime)
+          : composeDatetimeInput(editBooking.checkOutDate, editBooking.timeOut)
       });
       setFormInitialized(true);
     }
@@ -916,6 +940,13 @@ const EditBookingForm = () => {
         })),
         extraBedRooms: selectedRooms.filter(room => room.extraBed).map(room => room.room_number)
       };
+
+      // Send actual check-out time as ISO; omit when empty so backend doesn't cast '' to an invalid Date
+      if (formData.actualCheckOutTime) {
+        updateData.actualCheckOutTime = new Date(formData.actualCheckOutTime).toISOString();
+      } else {
+        delete updateData.actualCheckOutTime;
+      }
 
       console.log('Sending update data:', updateData);
       const response = await axios.put(`/api/bookings/update/${editBooking._id}`, updateData);
@@ -1726,6 +1757,18 @@ const EditBookingForm = () => {
                       disabled
                     />
                   </div>
+                  {formData.status === 'Checked Out' && (
+                    <div className="space-y-2">
+                      <Label htmlFor="actualCheckOutTime">Actual Check-out Time</Label>
+                      <Input
+                        id="actualCheckOutTime"
+                        name="actualCheckOutTime"
+                        type="datetime-local"
+                        value={formData.actualCheckOutTime}
+                        onChange={handleChange}
+                      />
+                    </div>
+                  )}
                   <div className="space-y-2 col-span-1 md:col-span-2">
                     <Label htmlFor="arrivedFrom">Arrival From</Label>
                     <Input

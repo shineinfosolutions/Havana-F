@@ -1195,14 +1195,17 @@ export default function Invoice() {
               <p className="font-medium">
                 :{" "}
                 {(() => {
-                  const checkInDate =
+                  let checkInDate =
                     invoiceData.invoiceDetails?.checkInDate || formatDate();
                   let checkInTime = "";
 
                   if (invoiceData.invoiceDetails?.actualCheckInTime) {
-                    checkInTime = new Date(
+                    // Use the full actual check-in timestamp for both date and time
+                    const aci = new Date(
                       invoiceData.invoiceDetails.actualCheckInTime,
-                    ).toLocaleTimeString("en-US", {
+                    );
+                    checkInDate = formatDate(aci);
+                    checkInTime = aci.toLocaleTimeString("en-US", {
                       hour12: true,
                       hour: "2-digit",
                       minute: "2-digit",
@@ -1218,14 +1221,17 @@ export default function Invoice() {
               <p className="font-medium">
                 :{" "}
                 {(() => {
-                  const checkOutDate =
+                  let checkOutDate =
                     invoiceData.invoiceDetails?.checkOutDate || formatDate();
                   let checkOutTime = "";
 
                   if (invoiceData.invoiceDetails?.actualCheckOutTime) {
-                    checkOutTime = new Date(
+                    // Use the full actual check-out timestamp for both date and time
+                    const aco = new Date(
                       invoiceData.invoiceDetails.actualCheckOutTime,
-                    ).toLocaleTimeString("en-US", {
+                    );
+                    checkOutDate = formatDate(aco);
+                    checkOutTime = aco.toLocaleTimeString("en-US", {
                       hour12: true,
                       hour: "2-digit",
                       minute: "2-digit",

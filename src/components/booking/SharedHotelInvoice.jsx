@@ -177,12 +177,15 @@ export default function SharedHotelInvoice() {
                 <p className="font-medium">: {invoiceData.invoiceDetails?.pax} Adult: {invoiceData.invoiceDetails?.adult}</p>
                 <p className="font-bold">CheckIn Date & Time</p>
                 <p className="font-medium">: {(() => {
-                  const checkInDate = invoiceData.invoiceDetails?.checkInDate || 'N/A';
+                  let checkInDate = invoiceData.invoiceDetails?.checkInDate || 'N/A';
                   let checkInTime = '';
-                  
+
                   // Try to get check-in time from booking data if available
                   if (invoiceData.bookingData?.actualCheckInTime) {
-                    checkInTime = new Date(invoiceData.bookingData.actualCheckInTime).toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit' });
+                    // Use the full actual check-in timestamp for both date and time
+                    const aci = new Date(invoiceData.bookingData.actualCheckInTime);
+                    checkInDate = aci.toLocaleDateString('en-GB');
+                    checkInTime = aci.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit' });
                   } else if (invoiceData.bookingData?.timeIn) {
                     checkInTime = invoiceData.bookingData.timeIn;
                   } else if (invoiceData.bookingData?.checkInTime) {
@@ -193,12 +196,15 @@ export default function SharedHotelInvoice() {
                 })()}</p>
                 <p className="font-bold">CheckOut Date & Time</p>
                 <p className="font-medium">: {(() => {
-                  const checkOutDate = invoiceData.invoiceDetails?.checkOutDate || 'N/A';
+                  let checkOutDate = invoiceData.invoiceDetails?.checkOutDate || 'N/A';
                   let checkOutTime = '';
-                  
+
                   // Try to get check-out time from booking data if available
                   if (invoiceData.bookingData?.actualCheckOutTime) {
-                    checkOutTime = new Date(invoiceData.bookingData.actualCheckOutTime).toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit' });
+                    // Use the full actual check-out timestamp for both date and time
+                    const aco = new Date(invoiceData.bookingData.actualCheckOutTime);
+                    checkOutDate = aco.toLocaleDateString('en-GB');
+                    checkOutTime = aco.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit' });
                   } else if (invoiceData.bookingData?.timeOut) {
                     checkOutTime = invoiceData.bookingData.timeOut;
                   } else if (invoiceData.bookingData?.checkOutTime) {
